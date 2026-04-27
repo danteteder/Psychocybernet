@@ -4,20 +4,21 @@ import { WeekGrid } from "./WeekGrid";
 import { TodoSidebar } from "./TodoSidebar";
 import { useBusinesses } from "./hooks";
 
-// Full weekly planner page layout
-// Left: 7-column week grid | Right: to-do list + notes
-// Mirrors the physical planner image the user provided
+// Full weekly planner page: two-page spread layout
+// Left page: days as horizontal rows (Mon-Sun)
+// Right page: to-do checklist + notes
+// Mirrors the physical planner image
 export function WeekPage() {
   const businesses = useBusinesses();
 
   return (
     <div className="flex h-full">
-      {/* Left side: weekly planner grid */}
+      {/* Left page: weekly planner rows */}
       <div className="flex-1 overflow-hidden">
         <WeekGrid />
       </div>
 
-      {/* Right side: to-do list + notes */}
+      {/* Right page: to-do + notes */}
       <TodoSidebar businesses={businesses} />
     </div>
   );

@@ -4,17 +4,16 @@ import { WeekGrid } from "./WeekGrid";
 import { TodoSidebar } from "./TodoSidebar";
 import { useBusinesses } from "./hooks";
 
-// Full weekly planner page: two-page spread layout
-// Left page: days as horizontal rows (Mon-Sun)
-// Right page: to-do checklist + notes
-// Mirrors the physical planner image
+// Two-page planner spread (responsive):
+// Desktop: left page (55%) = weekly rows, right page (45%) = to-do + notes
+// Mobile: stacked vertically (week on top, to-do + notes below)
 export function WeekPage() {
   const businesses = useBusinesses();
 
   return (
-    <div className="flex h-full">
-      {/* Left page: weekly planner rows */}
-      <div className="flex-1 overflow-hidden">
+    <div className="flex h-full flex-col lg:flex-row">
+      {/* Left page: weekly planner */}
+      <div className="flex-1 min-h-0 lg:w-[55%] overflow-hidden">
         <WeekGrid />
       </div>
 

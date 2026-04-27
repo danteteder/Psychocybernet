@@ -179,7 +179,7 @@ export function useFocusStats() {
       if (data) {
         setSessionCount(data.length);
         setTotalMinutes(
-          data.reduce((sum, s) => sum + (s.duration_minutes || 0), 0)
+          data.reduce((sum: number, s: { duration_minutes: number }) => sum + (s.duration_minutes || 0), 0)
         );
       }
     }

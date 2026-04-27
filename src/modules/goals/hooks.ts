@@ -100,7 +100,7 @@ export function useMonthTaskDensity(year: number, month: number) {
 
       if (data) {
         const counts: Record<string, number> = {};
-        data.forEach((t) => {
+        data.forEach((t: { scheduled_date: string | null }) => {
           if (t.scheduled_date) {
             counts[t.scheduled_date] = (counts[t.scheduled_date] || 0) + 1;
           }

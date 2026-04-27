@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* B&W Minimalist Design System */
+/* Pure black and white palette with thin lines and generous whitespace */
+
+@theme {
+  --color-bg: #FFFFFF;
+  --color-bg-subtle: #FAFAFA;
+  --color-border: #E5E5E5;
+  --color-text: #111111;
+  --color-text-muted: #888888;
+  --color-hover: #F5F5F5;
+  --color-active: #000000;
+  --color-done: #CCCCCC;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Smooth global defaults */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/* Selection color: black highlight */
+::selection {
+  background-color: #000000;
+  color: #FFFFFF;
+}

@@ -39,7 +39,7 @@ export function FocusTimer({
             cy="140"
             r="120"
             fill="none"
-            stroke="#E5E5E5"
+            stroke="#222222"
             strokeWidth="1"
           />
           {/* Progress arc */}
@@ -48,7 +48,7 @@ export function FocusTimer({
             cy="140"
             r="120"
             fill="none"
-            stroke="#000000"
+            stroke="#FFFFFF"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray={circumference}

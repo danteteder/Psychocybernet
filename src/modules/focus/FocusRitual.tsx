@@ -199,7 +199,7 @@ export function FocusRitual() {
   // ── Step 5: Complete ──
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
-      <div className="h-16 w-16 rounded-full bg-active" />
+      <div className="h-16 w-16 rounded-full border border-active" />
 
       <h1 className="text-sm font-medium uppercase tracking-widest">
         Logged

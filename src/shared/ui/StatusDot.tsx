@@ -19,7 +19,7 @@ export function StatusDot({ status, size = 14, onClick }: StatusDotProps) {
       <span
         onClick={onClick}
         className={baseClass}
-        style={{ width: size, height: size, backgroundColor: "#000" }}
+        style={{ width: size, height: size, backgroundColor: "var(--color-active)" }}
         title="Done"
       />
     );
@@ -34,7 +34,7 @@ export function StatusDot({ status, size = 14, onClick }: StatusDotProps) {
         style={{
           width: size,
           height: size,
-          background: "linear-gradient(to right, #000 50%, transparent 50%)",
+          background: "linear-gradient(to right, var(--color-active) 50%, transparent 50%)",
         }}
         title="In progress"
       />

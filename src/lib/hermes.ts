@@ -4,10 +4,25 @@
 // Runs client-side because Vercel can't reach Tailscale IPs.
 // The user's browser (on Tailscale) makes direct requests to Hermes.
 
-const DEFAULT_HERMES_URL = "http://100.108.28.43:8080";
+const DEFAULT_HERMES_URL = process.env.NEXT_PUBLIC_HERMES_URL || "http://100.108.28.43:8080";
 const SETTINGS_KEY = "psycho_hermes_settings";
 const QUEUE_KEY = "psycho_hermes_queue";
 const HISTORY_KEY = "psycho_hermes_history";
+
+// Error classes for better error handling
+export class HermesAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "HermesAuthError";
+  }
+}
+
+export class HermesConnectionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "HermesConnectionError";
+  }
+}
 
 // ── Types ──
 
@@ -171,20 +186,23 @@ export async function sendCommand(
   };
 
   try {
-    const res = await withRetry(() =>
-      hermesFetch("/command", {
-        method: "POST",
-        body: JSON.stringify({ command, context }),
-      })
-    );
+    const res = await hermesFetch("/command", {
+      method: "POST",
+      body: JSON.stringify({ command, context }),
+    });
 
-    if (!res.ok) throw new Error(`Hermes returned ${res.status}`);
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        throw new HermesAuthError("Hermes API key invalid or expired");
+      }
+      throw new HermesConnectionError(`Hermes returned ${res.status}`);
+    }
     const data = await res.json();
     task.id = data.taskId || data.id || task.id;
     task.status = "running";
     addToHistory(task);
     return task;
-  } catch {
+  } catch (err) {
     // Queue for later if Hermes is offline
     task.status = "pending";
     const queue = getQueue();

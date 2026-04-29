@@ -26,15 +26,17 @@ function loadConfig(): IntegrationConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     const hermes = getSettings();
     const parsed = raw ? JSON.parse(raw) : {};
+    const defaultHermesUrl = process.env.NEXT_PUBLIC_HERMES_URL || "http://100.108.28.43:8080";
     return {
-      hermesUrl: hermes.baseUrl || "http://100.108.28.43:8080",
+      hermesUrl: hermes.baseUrl || defaultHermesUrl,
       hermesApiKey: hermes.apiKey || "",
       shopifyStoreUrl: parsed.shopifyStoreUrl || "",
       instantlyApiKey: parsed.instantlyApiKey || "",
       browserbaseApiKey: parsed.browserbaseApiKey || "",
     };
   } catch {
-    return { hermesUrl: "http://100.108.28.43:8080", hermesApiKey: "", shopifyStoreUrl: "", instantlyApiKey: "", browserbaseApiKey: "" };
+    const defaultHermesUrl = process.env.NEXT_PUBLIC_HERMES_URL || "http://100.108.28.43:8080";
+    return { hermesUrl: defaultHermesUrl, hermesApiKey: "", shopifyStoreUrl: "", instantlyApiKey: "", browserbaseApiKey: "" };
   }
 }
 

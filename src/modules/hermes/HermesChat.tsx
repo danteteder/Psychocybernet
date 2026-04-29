@@ -22,7 +22,6 @@ import {
   sendVoiceCommand, 
   checkStatus,
   getTaskResult,
-  getEffectiveHermesBaseUrl,
   type HermesTask,
   type HermesStatus,
   getSettings,

@@ -397,12 +397,12 @@ useEffect(() => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={async () => {
-              const base = await getEffectiveHermesBaseUrl();
-              window.open(base, "_blank", "noopener,noreferrer");
+            onClick={() => {
+              const { baseUrl } = getSettings();
+              window.open(baseUrl, "_blank", "noopener,noreferrer");
             }}
             className="text-[10px] text-text-muted/50 hover:text-text transition-colors"
-            title="Open Hermes gateway in browser (uses working Tailscale or fallback URL)"
+            title="Open Hermes gateway in browser"
           >
             Open UI
           </button>

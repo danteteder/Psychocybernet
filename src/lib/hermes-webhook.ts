@@ -12,11 +12,11 @@ const SECRET_MAP: Record<WebhookRoute, string> = {
   "campaign-alert": "HERMES_WEBHOOK_SECRET_CAMPAIGN",
 };
 
-/** Create HMAC-SHA256 signature for a payload */
-export function signPayload(payload: object, secret: string): string {
+/** Create HMAC-SHA256 hex signature from raw body string */
+export function signBody(rawBody: string, secret: string): string {
   return crypto
     .createHmac("sha256", secret)
-    .update(JSON.stringify(payload))
+    .update(rawBody)
     .digest("hex");
 }
 
@@ -32,7 +32,9 @@ export async function sendWebhook(
   if (!baseUrl) throw new Error("HERMES_WEBHOOK_BASE not set");
   if (!secret) throw new Error(`${secretKey} not set`);
 
-  const signature = signPayload(payload, secret);
+  // Sign the exact same string that gets sent as the body
+  const rawBody = JSON.stringify(payload);
+  const signature = signBody(rawBody, secret);
   const url = `${baseUrl}/webhooks/${route}`;
 
   const res = await fetch(url, {
@@ -41,16 +43,19 @@ export async function sendWebhook(
       "Content-Type": "application/json",
       "X-Webhook-Signature": signature,
     },
-    body: JSON.stringify(payload),
+    body: rawBody,
   });
 
-  const body = res.ok ? await res.json().catch(() => null) : null;
+  // Hermes returns 202 (accepted) on success
+  const isOk = res.status >= 200 && res.status < 300;
+  const body = isOk ? await res.json().catch(() => null) : null;
 
-  if (!res.ok) {
-    console.error(`[webhook] ${route} failed: ${res.status} ${res.statusText}`);
+  if (!isOk) {
+    const errText = await res.text().catch(() => "");
+    console.error(`[webhook] ${route} failed: ${res.status} ${errText}`);
   }
 
-  return { ok: res.ok, status: res.status, body };
+  return { ok: isOk, status: res.status, body };
 }
 
 /** Send a campaign alert (new lead, response, conversion, etc.) */

@@ -1,5 +1,5 @@
 // Heartbeat API route: sends health check to Hermes gateway
-// Called by Vercel cron or manually: GET /api/webhooks/heartbeat
+// Called by Vercel cron (every 5min) or manually: GET /api/webhooks/heartbeat
 
 import { NextResponse } from "next/server";
 import { sendHealthbeat } from "@/lib/hermes-webhook";

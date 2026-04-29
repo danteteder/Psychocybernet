@@ -20,7 +20,8 @@ import {
 import { 
   sendCommand, 
   sendVoiceCommand, 
-  checkStatus, 
+  checkStatus,
+  getTaskResult,
   type HermesTask,
   type HermesStatus,
   getSettings,

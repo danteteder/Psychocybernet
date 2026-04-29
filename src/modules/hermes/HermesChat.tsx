@@ -22,6 +22,7 @@ import {
   sendVoiceCommand, 
   checkStatus,
   getTaskResult,
+  getEffectiveHermesBaseUrl,
   type HermesTask,
   type HermesStatus,
   getSettings,
@@ -395,6 +396,17 @@ useEffect(() => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={async () => {
+              const base = await getEffectiveHermesBaseUrl();
+              window.open(base, "_blank", "noopener,noreferrer");
+            }}
+            className="text-[10px] text-text-muted/50 hover:text-text transition-colors"
+            title="Open Hermes gateway in browser (uses working Tailscale or fallback URL)"
+          >
+            Open UI
+          </button>
           <button
             onClick={openSettingsEditor}
             className="text-[10px] text-text-muted/50 hover:text-text transition-colors"

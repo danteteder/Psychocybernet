@@ -4,7 +4,7 @@
 // Stored in localStorage (single-user system)
 
 import { useEffect, useState } from "react";
-import { getSettings, saveSettings, checkStatus, getDefaultHermesBaseUrl } from "@/lib/hermes";
+import { getSettings, saveSettings, checkStatus, getDefaultHermesBaseUrl, clearHermesBaseCache } from "@/lib/hermes";
 import { Check, Loader2, X, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 
@@ -117,9 +117,13 @@ export function IntegrationsForm() {
         {/* Hermes */}
         <FieldGroup title="Hermes Gateway (UI + API)">
           <p className="text-[10px] text-text-muted/50 leading-relaxed max-w-xl mb-1">
-            Your browser calls this URL (not Vercel). Use a public HTTPS URL from home:
-            run <span className="text-text-muted">ngrok http 8080</span> (gateway UI port), or Tailscale IP only if this device is on Tailscale.
-            Webhooks use port 8644 — different tunnel; do not put that here unless the UI lives there.
+            Your browser calls this URL. With Tailscale on this Mac, use your laptop Tailscale IP
+            (e.g. <span className="text-text-muted">http://100.108.28.43:8080</span>) or MagicDNS
+            (e.g. <span className="text-text-muted">http://laptop-name:8080</span>).
+            If the IP fails, add <span className="text-text-muted">NEXT_PUBLIC_HERMES_FALLBACK_URL</span> or
+            <span className="text-text-muted"> NEXT_PUBLIC_HERMES_URL_CANDIDATES</span> in Vercel (comma-separated ngrok URLs).
+            The app tries each until <span className="text-text-muted">/health</span> responds.
+            Webhooks (8644) stay separate server-side.
           </p>
           <Field
             label="URL"
@@ -147,6 +151,17 @@ export function IntegrationsForm() {
             </button>
             {hermesConn === "ok" && <Check size={12} className="text-green-500" />}
             {hermesConn === "fail" && <X size={12} className="text-red-400" />}
+            <button
+              type="button"
+              onClick={() => {
+                clearHermesBaseCache();
+                setHermesConn("idle");
+              }}
+              className="text-[10px] text-text-muted/40 hover:text-text-muted transition-colors ml-1"
+              title="Forget cached Hermes URL and try Tailscale / fallbacks again"
+            >
+              Reset route cache
+            </button>
           </div>
         </FieldGroup>
 

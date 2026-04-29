@@ -3,14 +3,17 @@
 // Hermes AI Gateway client
 // Runs client-side — YOUR BROWSER calls Hermes (not Vercel).
 //
-// - Tailscale IP (100.x) only works if THIS device is on Tailscale.
-// - From a MacBook / phone without Tailscale, use a public URL:
-//   run `ngrok http 8080` (or whatever port serves the gateway UI) and set
-//   NEXT_PUBLIC_HERMES_PUBLIC_URL=https://….ngrok-free.app in Vercel + Settings.
-// - Webhooks use a different tunnel (often localhost:8644) — that is NOT the UI.
+// Reliability (Tailscale + backup):
+// - Put your laptop Tailscale URL in Settings (e.g. http://100.108.28.43:8080).
+// - Optional MagicDNS: http://your-machine-name:8080 (same tailnet).
+// - Set NEXT_PUBLIC_HERMES_FALLBACK_URL or NEXT_PUBLIC_HERMES_URL_CANDIDATES (comma-separated)
+//   in Vercel for ngrok / backup when Tailscale glitches.
+// - On each session we ping /health on each candidate in order and cache the first that works.
+//
+// Webhooks (port 8644) are separate — HERMES_WEBHOOK_* env on the server.
 
 /** Default Hermes base URL when nothing is saved in localStorage.
- *  Priority: NEXT_PUBLIC_HERMES_PUBLIC_URL (explicit) → NEXT_PUBLIC_HERMES_URL (alias) → Tailscale. */
+ *  Priority: NEXT_PUBLIC_HERMES_PUBLIC_URL → NEXT_PUBLIC_HERMES_URL → Tailscale IP. */
 export function getDefaultHermesBaseUrl(): string {
   const pub =
     (typeof process !== "undefined" && process.env.NEXT_PUBLIC_HERMES_PUBLIC_URL) ||
@@ -18,6 +21,101 @@ export function getDefaultHermesBaseUrl(): string {
   if (pub) return pub.replace(/\/$/, "");
   return "http://100.108.28.43:8080";
 }
+
+const RESOLVED_BASE_SESSION_KEY = "psycho_hermes_working_base";
+
+/** Extra URLs to try if the primary fails (from Vercel env). Comma-separated, order matters after Settings URL. */
+function hermesUrlCandidatesFromEnv(): string[] {
+  const raw =
+    (typeof process !== "undefined" && process.env.NEXT_PUBLIC_HERMES_URL_CANDIDATES) || "";
+  const single =
+    typeof process !== "undefined" && process.env.NEXT_PUBLIC_HERMES_FALLBACK_URL
+      ? process.env.NEXT_PUBLIC_HERMES_FALLBACK_URL
+      : "";
+  const parts = [
+    ...raw.split(",").map((s) => s.trim()).filter(Boolean),
+    ...(single ? [single.trim()] : []),
+  ];
+  return parts.map((u) => u.replace(/\/$/, ""));
+}
+
+/** Ordered list: Settings first, then env candidates, then bundled default (deduped). */
+export function getHermesBaseCandidates(): string[] {
+  const saved = typeof window !== "undefined" ? getSettings().baseUrl : getDefaultHermesBaseUrl();
+  const defaultB = getDefaultHermesBaseUrl();
+  const list = [
+    saved.replace(/\/$/, ""),
+    ...hermesUrlCandidatesFromEnv(),
+    defaultB,
+  ];
+  return [...new Set(list.filter(Boolean))];
+}
+
+async function pingHealth(base: string, timeoutMs: number): Promise<boolean> {
+  try {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), timeoutMs);
+    const r = await fetch(`${base}/health`, { method: "GET", signal: c.signal });
+    clearTimeout(t);
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** In-memory cache for the working base URL this tab session. */
+let memoryResolvedBase: string | null = null;
+
+/** Forget cached Hermes URL (e.g. after changing Settings or when stuck). */
+export function clearHermesBaseCache(): void {
+  memoryResolvedBase = null;
+  try {
+    sessionStorage.removeItem(RESOLVED_BASE_SESSION_KEY);
+  } catch {
+    /* private mode */
+  }
+}
+
+/**
+ * Pick a base URL that responds to GET /health.
+ * Order: last known good (session) → Settings + env candidates.
+ */
+export async function getEffectiveHermesBaseUrl(): Promise<string> {
+  if (typeof window === "undefined") return getDefaultHermesBaseUrl();
+
+  const candidates = getHermesBaseCandidates();
+
+  if (memoryResolvedBase && (await pingHealth(memoryResolvedBase, 2500))) {
+    return memoryResolvedBase;
+  }
+
+  try {
+    const sess = sessionStorage.getItem(RESOLVED_BASE_SESSION_KEY);
+    if (sess && (await pingHealth(sess, 2500))) {
+      memoryResolvedBase = sess;
+      return sess;
+    }
+  } catch {
+    /* ignore */
+  }
+
+  for (const base of candidates) {
+    if (await pingHealth(base, 4000)) {
+      memoryResolvedBase = base;
+      try {
+        sessionStorage.setItem(RESOLVED_BASE_SESSION_KEY, base);
+      } catch {
+        /* ignore */
+      }
+      return base;
+    }
+  }
+
+  memoryResolvedBase = null;
+  // Nothing answered; still return primary so error messages / queue behave predictably
+  return getSettings().baseUrl.replace(/\/$/, "");
+}
+
 const SETTINGS_KEY = "psycho_hermes_settings";
 const QUEUE_KEY = "psycho_hermes_queue";
 const HISTORY_KEY = "psycho_hermes_history";
@@ -78,6 +176,7 @@ export function getSettings(): HermesSettings {
 
 export function saveSettings(settings: HermesSettings): void {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  clearHermesBaseCache();
 }
 
 // ── Task history (localStorage) ──
@@ -129,7 +228,8 @@ async function hermesFetch(
   options: RequestInit = {},
   timeoutMs = 30000
 ): Promise<Response> {
-  const { baseUrl, apiKey } = getSettings();
+  const baseUrl = await getEffectiveHermesBaseUrl();
+  const { apiKey } = getSettings();
   const url = `${baseUrl}${path}`;
 
   const headers: Record<string, string> = {
@@ -175,9 +275,10 @@ async function withRetry<T>(
 
 // ── Public API ──
 
-/** Check if Hermes gateway is reachable */
+/** Check if Hermes gateway is reachable (tries failover chain). */
 export async function checkStatus(): Promise<HermesStatus> {
   try {
+    await getEffectiveHermesBaseUrl();
     const res = await hermesFetch("/health", { method: "GET" }, 5000);
     if (!res.ok) return { online: false };
     const data = await res.json();
@@ -262,7 +363,8 @@ export async function sendVoiceCommand(audioBlob: Blob): Promise<HermesTask> {
   };
 
   try {
-    const { baseUrl, apiKey } = getSettings();
+    const baseUrl = await getEffectiveHermesBaseUrl();
+    const { apiKey } = getSettings();
     const headers: Record<string, string> = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
 
     const res = await fetch(`${baseUrl}/voice`, {

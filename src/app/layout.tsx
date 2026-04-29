@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/lib/theme";
 
 export const metadata: Metadata = {
   title: "Psychocybernet",
@@ -40,7 +41,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-bg text-text antialiased">
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         {/* Register service worker for PWA */}
         <script
           dangerouslySetInnerHTML={{

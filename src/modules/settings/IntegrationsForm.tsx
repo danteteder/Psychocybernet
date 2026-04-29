@@ -1,11 +1,12 @@
 "use client";
 
-// Settings page: configure API connections for Hermes, Google, Shopify, Instantly
+// Settings page: configure API connections for Hermes, Google, Shopify, etc.
 // Stored in localStorage (single-user system)
 
 import { useEffect, useState } from "react";
 import { getSettings, saveSettings, checkStatus, type HermesSettings } from "@/lib/hermes";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader2, X, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/lib/theme";
 
 interface IntegrationConfig {
   hermesUrl: string;
@@ -51,6 +52,7 @@ function persistConfig(config: IntegrationConfig) {
 type ConnectionState = "idle" | "testing" | "ok" | "fail";
 
 export function IntegrationsForm() {
+  const { theme, toggleTheme } = useTheme();
   const [config, setConfig] = useState<IntegrationConfig>(loadConfig);
   const [saved, setSaved] = useState(false);
   const [hermesConn, setHermesConn] = useState<ConnectionState>("idle");
@@ -80,11 +82,33 @@ export function IntegrationsForm() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-5 pt-4 pb-3 border-b border-border/60">
-        <h1 className="text-[11px] font-medium tracking-[0.3em] uppercase text-text-muted/70">
-          Settings
-        </h1>
-        <p className="text-[10px] text-text-muted/40 mt-0.5">Integration configuration</p>
+      <div className="px-5 pt-4 pb-3 border-b border-border/60 flex items-center justify-between">
+        <div>
+          <h1 className="text-[11px] font-medium tracking-[0.3em] uppercase text-text-muted/70">
+            Settings
+          </h1>
+          <p className="text-[10px] text-text-muted/40 mt-0.5">Integration configuration</p>
+        </div>
+        
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-2 px-3 py-1.5 rounded border border-border
+                     hover:bg-hover transition-colors text-[10px]"
+          title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        >
+          {theme === "dark" ? (
+            <>
+              <Sun size={12} />
+              <span className="uppercase tracking-[0.15em]">Light</span>
+            </>
+          ) : (
+            <>
+              <Moon size={12} />
+              <span className="uppercase tracking-[0.15em]">Dark</span>
+            </>
+          )}
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">

@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* B&W Minimalist Design System — Dark Mode */
-/* Pure dark palette with thin lines and generous whitespace */
+/* B&W Minimalist Design System — Dark/Light Mode */
 
 @theme {
+  /* Dark mode (default) */
   --color-bg: #0A0A0A;
   --color-bg-subtle: #111111;
   --color-border: #222222;
@@ -12,6 +12,16 @@
   --color-hover: #1A1A1A;
   --color-active: #FFFFFF;
   --color-done: #444444;
+
+  /* Light mode */
+  --color-bg-light: #FFFFFF;
+  --color-bg-subtle-light: #F5F5F5;
+  --color-border-light: #E5E5E5;
+  --color-text-light: #1A1A1A;
+  --color-text-muted-light: #999999;
+  --color-hover-light: #F0F0F0;
+  --color-active-light: #000000;
+  --color-done-light: #CCCCCC;
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
@@ -26,10 +36,33 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Selection color: white highlight on dark */
+/* Light mode - applied when .dark class is removed */
+html:not(.dark) body {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-light);
+}
+
+html:not(.dark) {
+  --color-bg: var(--color-bg-light);
+  --color-bg-subtle: var(--color-bg-subtle-light);
+  --color-border: var(--color-border-light);
+  --color-text: var(--color-text-light);
+  --color-text-muted: var(--color-text-muted-light);
+  --color-hover: var(--color-hover-light);
+  --color-active: var(--color-active-light);
+  --color-done: var(--color-done-light);
+}
+
+/* Selection color adapts to theme */
 ::selection {
   background-color: #FFFFFF;
   color: #000000;
+}
+
+html:not(.dark) ::selection {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
 }

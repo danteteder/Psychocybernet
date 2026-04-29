@@ -9,6 +9,9 @@ import {
   Calendar,
   Users,
   Focus,
+  Bot,
+  ShoppingBag,
+  Settings,
   LogOut,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +24,10 @@ const navItems = [
   { href: "/month", icon: CalendarRange, label: "Month" },
   { href: "/year", icon: Calendar, label: "Year" },
   { href: "/team", icon: Users, label: "Team" },
+  { href: "/agent", icon: Bot, label: "Hermes" },
+  { href: "/calendar", icon: Target, label: "Calendar" },
+  { href: "/shopify", icon: ShoppingBag, label: "Shopify" },
+  { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
 // Minimal icon-only sidebar navigation

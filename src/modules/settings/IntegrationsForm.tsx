@@ -4,7 +4,7 @@
 // Stored in localStorage (single-user system)
 
 import { useEffect, useState } from "react";
-import { getSettings, saveSettings, checkStatus, type HermesSettings } from "@/lib/hermes";
+import { getSettings, saveSettings, checkStatus, getDefaultHermesBaseUrl } from "@/lib/hermes";
 import { Check, Loader2, X, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 
@@ -26,17 +26,17 @@ function loadConfig(): IntegrationConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     const hermes = getSettings();
     const parsed = raw ? JSON.parse(raw) : {};
-    const defaultHermesUrl = process.env.NEXT_PUBLIC_HERMES_URL || "http://100.108.28.43:8080";
+    const def = getDefaultHermesBaseUrl();
     return {
-      hermesUrl: hermes.baseUrl || defaultHermesUrl,
+      hermesUrl: hermes.baseUrl || def,
       hermesApiKey: hermes.apiKey || "",
       shopifyStoreUrl: parsed.shopifyStoreUrl || "",
       instantlyApiKey: parsed.instantlyApiKey || "",
       browserbaseApiKey: parsed.browserbaseApiKey || "",
     };
   } catch {
-    const defaultHermesUrl = process.env.NEXT_PUBLIC_HERMES_URL || "http://100.108.28.43:8080";
-    return { hermesUrl: defaultHermesUrl, hermesApiKey: "", shopifyStoreUrl: "", instantlyApiKey: "", browserbaseApiKey: "" };
+    const def = getDefaultHermesBaseUrl();
+    return { hermesUrl: def, hermesApiKey: "", shopifyStoreUrl: "", instantlyApiKey: "", browserbaseApiKey: "" };
   }
 }
 
@@ -115,12 +115,17 @@ export function IntegrationsForm() {
 
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
         {/* Hermes */}
-        <FieldGroup title="Hermes Gateway">
+        <FieldGroup title="Hermes Gateway (UI + API)">
+          <p className="text-[10px] text-text-muted/50 leading-relaxed max-w-xl mb-1">
+            Your browser calls this URL (not Vercel). Use a public HTTPS URL from home:
+            run <span className="text-text-muted">ngrok http 8080</span> (gateway UI port), or Tailscale IP only if this device is on Tailscale.
+            Webhooks use port 8644 — different tunnel; do not put that here unless the UI lives there.
+          </p>
           <Field
             label="URL"
             value={config.hermesUrl}
             onChange={(v) => handleChange("hermesUrl", v)}
-            placeholder="http://100.108.28.43:8080"
+            placeholder="https://your-gateway.ngrok-free.app"
           />
           <Field
             label="API Key"

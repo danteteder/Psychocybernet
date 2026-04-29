@@ -1,10 +1,23 @@
 "use client";
 
 // Hermes AI Gateway client
-// Runs client-side because Vercel can't reach Tailscale IPs.
-// The user's browser (on Tailscale) makes direct requests to Hermes.
+// Runs client-side — YOUR BROWSER calls Hermes (not Vercel).
+//
+// - Tailscale IP (100.x) only works if THIS device is on Tailscale.
+// - From a MacBook / phone without Tailscale, use a public URL:
+//   run `ngrok http 8080` (or whatever port serves the gateway UI) and set
+//   NEXT_PUBLIC_HERMES_PUBLIC_URL=https://….ngrok-free.app in Vercel + Settings.
+// - Webhooks use a different tunnel (often localhost:8644) — that is NOT the UI.
 
-const DEFAULT_HERMES_URL = process.env.NEXT_PUBLIC_HERMES_URL || "http://100.108.28.43:8080";
+/** Default Hermes base URL when nothing is saved in localStorage.
+ *  Priority: NEXT_PUBLIC_HERMES_PUBLIC_URL (explicit) → NEXT_PUBLIC_HERMES_URL (alias) → Tailscale. */
+export function getDefaultHermesBaseUrl(): string {
+  const pub =
+    (typeof process !== "undefined" && process.env.NEXT_PUBLIC_HERMES_PUBLIC_URL) ||
+    (typeof process !== "undefined" && process.env.NEXT_PUBLIC_HERMES_URL);
+  if (pub) return pub.replace(/\/$/, "");
+  return "http://100.108.28.43:8080";
+}
 const SETTINGS_KEY = "psycho_hermes_settings";
 const QUEUE_KEY = "psycho_hermes_queue";
 const HISTORY_KEY = "psycho_hermes_history";
@@ -53,12 +66,13 @@ export interface HermesStatus {
 // ── Settings persistence (localStorage) ──
 
 export function getSettings(): HermesSettings {
-  if (typeof window === "undefined") return { baseUrl: DEFAULT_HERMES_URL };
+  const fallback = getDefaultHermesBaseUrl();
+  if (typeof window === "undefined") return { baseUrl: fallback };
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    return raw ? JSON.parse(raw) : { baseUrl: DEFAULT_HERMES_URL };
+    return raw ? JSON.parse(raw) : { baseUrl: fallback };
   } catch {
-    return { baseUrl: DEFAULT_HERMES_URL };
+    return { baseUrl: fallback };
   }
 }
 

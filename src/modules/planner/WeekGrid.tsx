@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Brain, Target, Zap } from "lucide-react";
 import { DayRow } from "./DayRow";
 import { useWeekTasks, useBusinesses, useTaskActions, formatDate } from "./hooks";
+import { sendCommand } from "@/lib/hermes";
 import type { TaskStatus } from "@/shared/db/types";
 
-// Weekly planner left page: "Weekly planner" header + 7 day rows
+// Weekly planner left page: "Weekly planner" header + AI focus section + 7 day rows
 export function WeekGrid() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { tasks, loading, weekDates, refetch } = useWeekTasks(weekOffset);
   const businesses = useBusinesses();
-  const { addTask, updateTask, deleteTask } = useTaskActions(refetch);
+  const { addTask, updateTask, deleteTask } = useTaskActions(
 
   const today = new Date();
   const todayStr = formatDate(today);
@@ -67,6 +68,46 @@ export function WeekGrid() {
         >
           <ChevronRight size={14} strokeWidth={1.5} />
         </button>
+      </div>
+
+      {/* AI Daily Focus Section */}
+      <div className="px-5 py-3 border-b border-border/30">
+        <div className="flex items-start gap-3 bg-gradient-to-r from-blue-400/5 to-purple-400/5 rounded-lg p-4 border border-border/40">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center">
+              <Brain size={18} className="text-blue-500" />
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xs font-medium mb-2 text-text">
+              What's your asymmetric leverage today?
+            </h3>
+            <p className="text-[10px] text-text-muted/60 mb-3">
+              Focus on high-impact activities that compound: sales calls, automation setup, hiring decisions.
+              Let AI break down your priorities into actionable tasks.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  sendCommand("Analyze my current business priorities (5 sales interviews, LinkedIn automation, Upwork scraping, email campaign) and break down today's tasks by asymmetric leverage - what gives 10x returns vs linear time investment");
+                }}
+                className="flex items-center gap-1.5 text-[10px] bg-blue-400/10 text-blue-500 px-3 py-1.5 rounded hover:bg-blue-400/20 transition-colors"
+              >
+                <Zap size={10} />
+                Break down today with AI
+              </button>
+              <button
+                onClick={() => {
+                  sendCommand("Create focused tasks for today: 1) Schedule 5 technical sales interviews, 2) Setup LinkedIn automation (20 msgs/day), 3) Prepare Upwork scraping, 4) Follow up with 2 monthly clients");
+                }}
+                className="flex items-center gap-1.5 text-[10px] bg-text text-bg px-3 py-1.5 rounded hover:opacity-90 transition-opacity"
+              >
+                <Target size={10} />
+                Quick: Today's priorities
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Loading */}

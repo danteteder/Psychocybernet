@@ -20,13 +20,13 @@ import { useRouter } from "next/navigation";
 // Icon-only sidebar nav items
 const navItems = [
   { href: "/week", icon: CalendarDays, label: "Week" },
+  { href: "/business", icon: Target, label: "Business" },
   { href: "/focus", icon: Focus, label: "Focus" },
   { href: "/month", icon: CalendarRange, label: "Month" },
   { href: "/year", icon: Calendar, label: "Year" },
   { href: "/team", icon: Users, label: "Team" },
   { href: "/agent", icon: Bot, label: "Hermes" },
-  { href: "/calendar", icon: Target, label: "Calendar" },
-  { href: "/shopify", icon: ShoppingBag, label: "Shopify" },
+  { href: "/calendar", icon: CalendarDays, label: "Calendar" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
 

@@ -234,7 +234,7 @@ export function BusinessOverview() {
         </div>
       </div>
 
-      {/* Business Grid - Card Layout */}
+      {/* Business Grid - Card Layout (40% viewport per card) */}
       <div className="flex-1 overflow-y-auto px-5 py-4">
         {businesses.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-center">
@@ -247,12 +247,13 @@ export function BusinessOverview() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {businesses.map((biz) => (
               <div
                 key={biz.id}
-                className="border border-border/60 rounded-lg overflow-hidden
-                           hover:border-text-muted/40 transition-colors"
+                className="border border-border/60 rounded-xl overflow-hidden
+                           hover:border-text-muted/40 transition-colors
+                           w-full max-w-[720px] mx-auto"
               >
                 {/* Business Header */}
                 <div className="bg-bg-subtle px-4 py-3 border-b border-border/60">
@@ -319,15 +320,15 @@ export function BusinessOverview() {
                   </div>
                 </div>
 
-                {/* Metrics Grid */}
-                <div className="px-4 py-3">
-                  <div className="grid grid-cols-6 gap-3">
+                {/* Metrics Grid - Large & Prominent */}
+                <div className="px-6 py-5">
+                  <div className="grid grid-cols-3 gap-6">
                     {biz.metrics.map((metric, idx) => (
-                      <div key={idx} className="text-center">
-                        <div className="text-[9px] text-text-muted/50 uppercase mb-1">
+                      <div key={idx} className="text-center py-3">
+                        <div className="text-[10px] text-text-muted/60 uppercase tracking-wider mb-2">
                           {metric.name}
                         </div>
-                        <div className={`text-sm font-medium ${
+                        <div className={`text-2xl font-light ${
                           getMetricStatusColor(metric.status)
                         }`}>
                           {metric.value === "—" ? (
@@ -336,7 +337,7 @@ export function BusinessOverview() {
                             <>
                               {metric.value}
                               {metric.unit && (
-                                <span className="text-[9px] text-text-muted/40 ml-0.5">
+                                <span className="text-[10px] text-text-muted/50 ml-1">
                                   {metric.unit}
                                 </span>
                               )}
@@ -344,19 +345,19 @@ export function BusinessOverview() {
                           )}
                         </div>
                         {metric.trend && (
-                          <div className={`flex items-center justify-center gap-0.5 mt-1 text-xs ${
+                          <div className={`flex items-center justify-center gap-1 mt-2 text-sm ${
                             metric.trend === "up" ? "text-green-500" :
                             metric.trend === "down" ? "text-red-400" :
-                            "text-text-muted/40"
+                            "text-text-muted/50"
                           }`}>
-                            {metric.trend === "up" ? <TrendingUp size={9} /> :
-                             metric.trend === "down" ? <TrendingDown size={9} /> :
-                             <span className="w-2 h-px bg-text-muted/40" />}
+                            {metric.trend === "up" ? <TrendingUp size={12} /> :
+                             metric.trend === "down" ? <TrendingDown size={12} /> :
+                             <span className="w-4 h-px bg-text-muted/50" />}
                             {metric.change && `${metric.change > 0 ? "+" : ""}${metric.change}%`}
                           </div>
                         )}
                         {metric.status === "missing" && (
-                          <div className="text-[9px] text-text-muted/30 mt-1">
+                          <div className="text-[9px] text-text-muted/40 mt-2">
                             Missing data
                           </div>
                         )}

@@ -255,80 +255,51 @@ export function BusinessOverview() {
                            hover:border-text-muted/40 transition-colors
                            w-full max-w-[720px] mx-auto"
               >
-                {/* Business Header */}
-                <div className="bg-bg-subtle px-4 py-3 border-b border-border/60">
+                {/* Business Header - Minimal */}
+                <div className="bg-bg-subtle px-6 py-4 border-b border-border/60">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded flex items-center justify-center ${
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded flex items-center justify-center ${
                         biz.type === "agency" ? "bg-blue-400/10 text-blue-500" :
                         biz.type === "ecommerce" ? "bg-green-400/10 text-green-500" :
-                        biz.type === "saas" ? "bg-purple-400/10 text-purple-500" :
                         "bg-text-muted/10 text-text-muted"
                       }`}>
-                        <Building2 size={18} />
+                        <Building2 size={20} />
                       </div>
                       
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-medium">{biz.name}</h3>
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded capitalize ${
-                            getStatusColor(biz.status)
-                          }`}>
-                            {biz.status}
-                          </span>
-                        </div>
+                        <h3 className="text-base font-light">{biz.name}</h3>
                         {biz.url && (
                           <a
                             href={biz.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[10px] text-text-muted/50 hover:text-text 
-                                       flex items-center gap-1 mt-0.5"
+                            className="text-[10px] text-text-muted/50 hover:text-text"
                           >
                             {biz.url.replace("https://", "")}
-                            <ExternalLink size={9} />
                           </a>
                         )}
                       </div>
                     </div>
-
-                    {/* Quick Stats */}
-                    <div className="flex items-center gap-4 text-xs">
-                      {biz.quickStats.leads !== undefined && (
-                        <div className="text-right">
-                          <div className="text-text-muted/40 text-[9px] uppercase">Leads</div>
-                          <div className="font-medium">{biz.quickStats.leads}</div>
-                        </div>
-                      )}
-                      {biz.quickStats.revenue !== undefined && (
-                        <div className="text-right">
-                          <div className="text-text-muted/40 text-[9px] uppercase">Revenue</div>
-                          <div className="font-medium">
-                            ${typeof biz.quickStats.revenue === 'number' 
-                              ? biz.quickStats.revenue.toLocaleString() 
-                              : biz.quickStats.revenue}
-                          </div>
-                        </div>
-                      )}
-                      {biz.quickStats.teamSize !== undefined && (
-                        <div className="text-right">
-                          <div className="text-text-muted/40 text-[9px] uppercase">Team</div>
-                          <div className="font-medium">{biz.quickStats.teamSize}</div>
-                        </div>
-                      )}
-                    </div>
+                    
+                    {/* Simple Status */}
+                    <span className={`text-[10px] px-2 py-1 rounded capitalize ${
+                      getStatusColor(biz.status)
+                    }`}>
+                      {biz.status}
+                    </span>
                   </div>
                 </div>
 
-                {/* Metrics Grid - Large & Prominent */}
+                {/* Metrics - Minimal Tall Card */}
                 <div className="px-6 py-5">
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className="flex flex-col gap-4">
                     {biz.metrics.map((metric, idx) => (
-                      <div key={idx} className="text-center py-3">
-                        <div className="text-[10px] text-text-muted/60 uppercase tracking-wider mb-2">
+                      <div key={idx} className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
+                        <div className="text-[10px] text-text-muted/60 uppercase tracking-wider">
                           {metric.name}
                         </div>
-                        <div className={`text-2xl font-light ${
+                        <div className={`text-xl font-light ${
                           getMetricStatusColor(metric.status)
                         }`}>
                           {metric.value === "—" ? (
@@ -337,36 +308,19 @@ export function BusinessOverview() {
                             <>
                               {metric.value}
                               {metric.unit && (
-                                <span className="text-[10px] text-text-muted/50 ml-1">
+                                <span className="text-[9px] text-text-muted/50 ml-1">
                                   {metric.unit}
                                 </span>
                               )}
                             </>
                           )}
                         </div>
-                        {metric.trend && (
-                          <div className={`flex items-center justify-center gap-1 mt-2 text-sm ${
-                            metric.trend === "up" ? "text-green-500" :
-                            metric.trend === "down" ? "text-red-400" :
-                            "text-text-muted/50"
-                          }`}>
-                            {metric.trend === "up" ? <TrendingUp size={12} /> :
-                             metric.trend === "down" ? <TrendingDown size={12} /> :
-                             <span className="w-4 h-px bg-text-muted/50" />}
-                            {metric.change && `${metric.change > 0 ? "+" : ""}${metric.change}%`}
-                          </div>
-                        )}
-                        {metric.status === "missing" && (
-                          <div className="text-[9px] text-text-muted/40 mt-2">
-                            Missing data
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Quick Actions */}
+                {/* Quick Actions - Minimal */}
                 <div className="px-4 py-2 border-t border-border/30 bg-bg-subtle/30">
                   <div className="flex items-center gap-2">
                     {biz.id === "nordspike" && (

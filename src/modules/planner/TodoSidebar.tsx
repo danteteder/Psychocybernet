@@ -4,8 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Checkbox } from "@/shared/ui/Checkbox";
 import { Badge } from "@/shared/ui/Badge";
-import { Trash2 } from "lucide-react";
+import { Trash2, Zap } from "lucide-react";
 import type { Task, Business, TaskStatus } from "@/shared/db/types";
+import { sendCommand } from "@/lib/hermes";
 
 // Right page of the planner: "To do" checklist (top half) + "Notes" (bottom half)
 // With ruled lines matching the physical planner
@@ -23,6 +24,8 @@ export function TodoSidebar({ businesses }: TodoSidebarProps) {
   const [notesSaved, setNotesSaved] = useState(true);
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [expandedTask, setExpandedTask] = useState<string | null>(null);
+  const [subtasks, setSubtasks] = useState<{id: string, title: string, done: boolean}[]>([]);
   const supabase = createClient();
 
   const fetchTodos = useCallback(async () => {
@@ -44,6 +47,23 @@ export function TodoSidebar({ businesses }: TodoSidebarProps) {
       .limit(1);
     if (data && data.length > 0) setNotes(data[0].content);
   }, [supabase]);
+
+  async function handleBreakdownTask(task: Task) {
+    if (expandedTask === task.id) {
+      setExpandedTask(null);
+      setSubtasks([]);
+      return;
+    }
+    
+    setExpandedTask(task.id);
+    await sendCommand(`Break down "${task.title}" into 3-5 simple, actionable subtasks. Return as a numbered list.`);
+    // For now, showing placeholder - will integrate with actual AI response
+    setSubtasks([
+      { id: "sub-1", title: "Research and gather requirements", done: false },
+      { id: "sub-2", title: "Execute first step (15 min)", done: false },
+      { id: "sub-3", title: "Review and adjust", done: false },
+    ]);
+  }
 
   useEffect(() => { fetchTodos(); fetchNotes(); }, [fetchTodos, fetchNotes]);
 
@@ -103,24 +123,52 @@ export function TodoSidebar({ businesses }: TodoSidebarProps) {
           {tasks.map((task) => {
             const isDone = task.status === "done";
             const biz = getBusiness(task);
+            const isExpanded = expandedTask === task.id;
             return (
-              <div
-                key={task.id}
-                className={`group flex items-center gap-3 px-5 ${LINE_H} ${LINE_BORDER}
-                            transition-colors hover:bg-hover ${isDone ? "opacity-30" : ""}`}
-              >
-                <Checkbox checked={isDone} onChange={() => handleToggle(task)} size={12} />
-                <span className={`flex-1 text-[12px] ${isDone ? "line-through" : ""}`}>
-                  {task.title}
-                </span>
-                {biz && <Badge code={biz.short_code} />}
-                <button
-                  onClick={() => handleDelete(task.id)}
-                  className="text-text-muted opacity-0 group-hover:opacity-100
-                             hover:text-text transition-all"
+              <div key={task.id}>
+                <div
+                  className={`group flex items-center gap-3 px-5 ${LINE_H} ${LINE_BORDER}
+                              transition-colors hover:bg-hover ${isDone ? "opacity-30" : ""}`}
                 >
-                  <Trash2 size={10} strokeWidth={1.5} />
-                </button>
+                  <Checkbox checked={isDone} onChange={() => handleToggle(task)} size={12} />
+                  <span className={`flex-1 text-[12px] ${isDone ? "line-through" : ""}`}
+                        onClick={() => handleBreakdownTask(task)}
+                        style={{ cursor: !isDone ? "pointer" : "default" }}
+                  >
+                    {task.title}
+                  </span>
+                  {biz && <Badge code={biz.short_code} />}
+                  {!isDone && (
+                    <button
+                      onClick={() => handleBreakdownTask(task)}
+                      title="Break down with AI"
+                      className="opacity-0 group-hover:opacity-100 hover:text-text transition-all text-text-muted"
+                    >
+                      <Zap size={10} strokeWidth={1.5} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="text-text-muted opacity-0 group-hover:opacity-100
+                               hover:text-text transition-all"
+                  >
+                    <Trash2 size={10} strokeWidth={1.5} />
+                  </button>
+                </div>
+                
+                {/* Subtasks */}
+                {isExpanded && subtasks.length > 0 && (
+                  <div className="bg-bg-subtle/30 border-b border-border/20">
+                    {subtasks.map((sub, idx) => (
+                      <div key={sub.id} className="flex items-center gap-3 px-5 h-7 border-b border-border/20 pl-12">
+                        <div className="w-4 h-4 rounded border border-border/40 flex items-center justify-center text-[8px]">
+                          {sub.done ? "✓" : "•"}
+                        </div>
+                        <span className="text-[11px] text-text-muted/70">{sub.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}

@@ -2,10 +2,12 @@
 // These are manually defined to match our migrations.
 // Run `supabase gen types typescript` to auto-generate from the live DB.
 
-export type UserRole = "owner" | "employee";
+export type UserRole = "owner" | "employee" | "sales_rep";
 export type TaskStatus = "todo" | "in_progress" | "done" | "cancelled";
 export type GoalStatus = "active" | "achieved" | "dropped";
 export type NoteSource = "manual" | "voice" | "ai";
+export type LeadSource = "email" | "linkedin";
+export type CallStatus = "pending" | "called" | "meeting_booked" | "not_interested" | "closed";
 
 export interface Profile {
   id: string;
@@ -90,5 +92,29 @@ export interface Note {
   source: NoteSource;
   task_id: string | null;
   business_id: string | null;
+  created_at: string;
+}
+
+export interface WarmLead {
+  id: string;
+  email: string;
+  first_name: string;
+  company: string;
+  linkedin_url: string | null;
+  source: LeadSource;
+  replied_at: string;
+  call_status: CallStatus;
+  assigned_to: string | null;
+  created_at: string;
+}
+
+export interface LinkedInOutreachLog {
+  id: string;
+  profile_url: string;
+  company: string;
+  invite_sent_at: string;
+  accepted_at: string | null;
+  replied_at: string | null;
+  opener_used: string;
   created_at: string;
 }

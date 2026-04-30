@@ -11,6 +11,7 @@ import {
   Focus,
   Bot,
   Building2,
+  Mail,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import { useRouter } from "next/navigation";
 // Icon-only sidebar nav items
 const navItems = [
   { href: "/week", icon: CalendarDays, label: "Week" },
+  { href: "/outreach", icon: Mail, label: "Outreach" },
   { href: "/business", icon: Building2, label: "Business" },
   { href: "/focus", icon: Focus, label: "Focus" },
   { href: "/month", icon: CalendarRange, label: "Month" },

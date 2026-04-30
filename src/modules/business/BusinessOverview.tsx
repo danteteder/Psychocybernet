@@ -1,0 +1,362 @@
+"use client";
+
+// Business Overview Dashboard: Multi-business management
+// Shows all businesses with key metrics, one-click access to details
+
+import { useCallback, useEffect, useState } from "react";
+import { sendCommand, getTaskHistory } from "@/lib/hermes";
+import { 
+  Building2, 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign,
+  Users,
+  Mail,
+  MessageSquare,
+  ExternalLink,
+  Plus,
+  Settings,
+  AlertTriangle,
+  Check
+} from "lucide-react";
+
+interface BusinessMetric {
+  name: string;
+  value: string | number;
+  unit?: string;
+  trend?: "up" | "down" | "flat";
+  change?: number;
+  status?: "ok" | "warning" | "error" | "missing";
+}
+
+interface Business {
+  id: string;
+  name: string;
+  url?: string;
+  type: "agency" | "ecommerce" | "saas" | "consulting" | "other";
+  status: "active" | "paused" | "growing" | "struggling";
+  logo?: string;
+  metrics: BusinessMetric[];
+  quickStats: {
+    leads?: number;
+    revenue?: number;
+    growth?: number;
+    teamSize?: number;
+  };
+  lastUpdated: string;
+}
+
+export function BusinessOverview() {
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load businesses from history or create defaults
+  useEffect(() => {
+    loadBusinesses();
+  }, []);
+
+  async function loadBusinesses() {
+    setLoading(true);
+    try {
+      // Try to get from task history
+      const history = getTaskHistory();
+      const businessTasks = history.filter(
+        (t) => t.command.toLowerCase().includes("business overview") 
+                && t.status === "completed"
+      );
+
+      if (businessTasks.length > 0 && Array.isArray(businessTasks[0].result)) {
+        setBusinesses(businessTasks[0].result as Business[]);
+      } else {
+        // Create default businesses including Nordspike
+        const defaultBusinesses: Business[] = [
+          {
+            id: "nordspike",
+            name: "Nordspike",
+            url: "https://nordspike.com/",
+            type: "agency",
+            status: "growing",
+            metrics: [
+              { name: "MRR", value: "—", status: "missing", unit: "USD" },
+              { name: "LTV", value: "—", status: "missing", unit: "USD" },
+              { name: "CAC", value: "—", status: "missing", unit: "USD" },
+              { name: "Active Leads", value: 0, status: "ok" },
+              { name: "Email Campaigns", value: "Ready", status: "ok" },
+              { name: "LinkedIn Outreach", value: "Pending Setup", status: "warning" },
+            ],
+            quickStats: {
+              leads: 0,
+              revenue: 0,
+              growth: 0,
+              teamSize: 1,
+            },
+            lastUpdated: new Date().toISOString(),
+          },
+          // Placeholder for future businesses
+          {
+            id: "placeholder-1",
+            name: "E-commerce Store",
+            type: "ecommerce",
+            status: "paused",
+            metrics: [
+              { name: "Revenue", value: "—", status: "missing", unit: "USD" },
+              { name: "Orders", value: 0, status: "missing" },
+              { name: "Conversion Rate", value: "—", status: "missing", unit: "%" },
+            ],
+            quickStats: {},
+            lastUpdated: new Date().toISOString(),
+          },
+        ];
+
+        setBusinesses(defaultBusinesses);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAddBusiness() {
+    await sendCommand(
+      "Help me set up a new business entity in Psychocybernet. Ask me for: business name, type, key metrics to track, and any existing data sources to integrate."
+    );
+  }
+
+  function getStatusColor(status: Business["status"]) {
+    switch (status) {
+      case "growing": return "text-green-500 bg-green-400/10";
+      case "active": return "text-blue-500 bg-blue-400/10";
+      case "struggling": return "text-red-400 bg-red-400/10";
+      case "paused": return "text-text-muted bg-bg-subtle";
+      default: return "text-text-muted";
+    }
+  }
+
+  function getMetricStatusColor(status?: BusinessMetric["status"]) {
+    switch (status) {
+      case "ok": return "text-text";
+      case "warning": return "text-amber-500";
+      case "error": return "text-red-400";
+      case "missing": return "text-text-muted/30";
+      default: return "text-text";
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border/60">
+        <div className="flex items-center gap-3">
+          <h1 className="text-[11px] font-medium tracking-[0.3em] uppercase text-text-muted/70">
+            Business Overview
+          </h1>
+          {loading ? (
+            <div className="w-2 h-2 rounded-full bg-text-muted animate-pulse" />
+          ) : (
+            <div className="flex items-center gap-1 text-[10px] text-green-500">
+              <Check size={9} />
+              <span>{businesses.length} businesses</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleAddBusiness}
+            className="flex items-center gap-1.5 text-[10px] bg-text text-bg px-2 py-1 rounded
+                       hover:opacity-90 transition-opacity"
+          >
+            <Plus size={11} />
+            Add Business
+          </button>
+        </div>
+      </div>
+
+      {/* Business Grid */}
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        {businesses.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center text-center">
+            <div>
+              <Building2 size={32} className="mx-auto text-text-muted/30 mb-3" />
+              <p className="text-sm text-text-muted mb-2">No businesses yet</p>
+              <p className="text-xs text-text-muted/40">
+                Click "Add Business" to get started
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {businesses.map((biz) => (
+              <div
+                key={biz.id}
+                className="border border-border/60 rounded-lg overflow-hidden
+                           hover:border-text-muted/40 transition-colors"
+              >
+                {/* Business Header */}
+                <div className="bg-bg-subtle px-4 py-3 border-b border-border/60">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded flex items-center justify-center ${
+                        biz.type === "agency" ? "bg-blue-400/10 text-blue-500" :
+                        biz.type === "ecommerce" ? "bg-green-400/10 text-green-500" :
+                        biz.type === "saas" ? "bg-purple-400/10 text-purple-500" :
+                        "bg-text-muted/10 text-text-muted"
+                      }`}>
+                        <Building2 size={18} />
+                      </div>
+                      
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-medium">{biz.name}</h3>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded capitalize ${
+                            getStatusColor(biz.status)
+                          }`}>
+                            {biz.status}
+                          </span>
+                        </div>
+                        {biz.url && (
+                          <a
+                            href={biz.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-text-muted/50 hover:text-text 
+                                       flex items-center gap-1 mt-0.5"
+                          >
+                            {biz.url.replace("https://", "")}
+                            <ExternalLink size={9} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="flex items-center gap-4 text-xs">
+                      {biz.quickStats.leads !== undefined && (
+                        <div className="text-right">
+                          <div className="text-text-muted/40 text-[9px] uppercase">Leads</div>
+                          <div className="font-medium">{biz.quickStats.leads}</div>
+                        </div>
+                      )}
+                      {biz.quickStats.revenue !== undefined && (
+                        <div className="text-right">
+                          <div className="text-text-muted/40 text-[9px] uppercase">Revenue</div>
+                          <div className="font-medium">
+                            ${typeof biz.quickStats.revenue === 'number' 
+                              ? biz.quickStats.revenue.toLocaleString() 
+                              : biz.quickStats.revenue}
+                          </div>
+                        </div>
+                      )}
+                      {biz.quickStats.teamSize !== undefined && (
+                        <div className="text-right">
+                          <div className="text-text-muted/40 text-[9px] uppercase">Team</div>
+                          <div className="font-medium">{biz.quickStats.teamSize}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metrics Grid */}
+                <div className="px-4 py-3">
+                  <div className="grid grid-cols-6 gap-3">
+                    {biz.metrics.map((metric, idx) => (
+                      <div key={idx} className="text-center">
+                        <div className="text-[9px] text-text-muted/50 uppercase mb-1">
+                          {metric.name}
+                        </div>
+                        <div className={`text-sm font-medium ${
+                          getMetricStatusColor(metric.status)
+                        }`}>
+                          {metric.value === "—" ? (
+                            <span className="text-text-muted/30">—</span>
+                          ) : (
+                            <>
+                              {metric.value}
+                              {metric.unit && (
+                                <span className="text-[9px] text-text-muted/40 ml-0.5">
+                                  {metric.unit}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        {metric.trend && (
+                          <div className={`flex items-center justify-center gap-0.5 mt-1 text-xs ${
+                            metric.trend === "up" ? "text-green-500" :
+                            metric.trend === "down" ? "text-red-400" :
+                            "text-text-muted/40"
+                          }`}>
+                            {metric.trend === "up" ? <TrendingUp size={9} /> :
+                             metric.trend === "down" ? <TrendingDown size={9} /> :
+                             <span className="w-2 h-px bg-text-muted/40" />}
+                            {metric.change && `${metric.change > 0 ? "+" : ""}${metric.change}%`}
+                          </div>
+                        )}
+                        {metric.status === "missing" && (
+                          <div className="text-[9px] text-text-muted/30 mt-1">
+                            Missing data
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="px-4 py-2 border-t border-border/30 bg-bg-subtle/30">
+                  <div className="flex items-center gap-2">
+                    {biz.id === "nordspike" && (
+                      <>
+                        <button
+                          onClick={() => sendCommand(`Check Nordspike Instantly API integration status and verify email campaigns are ready to send`)}
+                          className="text-[10px] bg-blue-400/10 text-blue-500 px-2 py-1 rounded
+                                     hover:bg-blue-400/20 transition-colors flex items-center gap-1"
+                        >
+                          <Mail size={10} />
+                          Check Email Setup
+                        </button>
+                        <button
+                          onClick={() => sendCommand(`Set up LinkedIn automation for Nordspike: 20 outreach messages per day using Browser-Use API`)}
+                          className="text-[10px] bg-blue-400/10 text-blue-500 px-2 py-1 rounded
+                                     hover:bg-blue-400/20 transition-colors flex items-center gap-1"
+                        >
+                          <MessageSquare size={10} />
+                          Start LinkedIn Outreach
+                        </button>
+                        <button
+                          onClick={() => window.location.href = "/business/nordspike"}
+                          className="text-[10px] bg-bg border border-border px-2 py-1 rounded
+                                     hover:bg-hover transition-colors"
+                        >
+                          View Full Profile →
+                        </button>
+                      </>
+                    )}
+                    
+                    {biz.id !== "nordspike" && (
+                      <div className="text-[10px] text-text-muted/40">
+                        Business profile coming soon...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Setup Guide */}
+      <div className="border-t border-border/60 px-5 py-3 bg-bg-subtle/50">
+        <div className="flex items-start gap-2">
+          <AlertTriangle size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
+          <div className="text-[10px] text-text-muted/60">
+            <span className="font-medium text-text-muted">Setup Required:</span>{" "}
+            Add your actual metrics to replace "—" placeholders. Click on Nordspike to fill in current data. 
+            Missing metrics won't affect other features - they'll update automatically once you connect data sources.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

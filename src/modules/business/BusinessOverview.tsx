@@ -17,7 +17,9 @@ import {
   Plus,
   Settings,
   AlertTriangle,
-  Check
+  Check,
+  Briefcase,
+  Target,
 } from "lucide-react";
 
 interface BusinessMetric {
@@ -68,7 +70,7 @@ export function BusinessOverview() {
       if (businessTasks.length > 0 && Array.isArray(businessTasks[0].result)) {
         setBusinesses(businessTasks[0].result as Business[]);
       } else {
-        // Create default businesses including Nordspike
+        // Create default businesses including Nordspike with actual metrics
         const defaultBusinesses: Business[] = [
           {
             id: "nordspike",
@@ -77,16 +79,16 @@ export function BusinessOverview() {
             type: "agency",
             status: "growing",
             metrics: [
-              { name: "MRR", value: "—", status: "missing", unit: "USD" },
-              { name: "LTV", value: "—", status: "missing", unit: "USD" },
-              { name: "CAC", value: "—", status: "missing", unit: "USD" },
-              { name: "Active Leads", value: 0, status: "ok" },
-              { name: "Email Campaigns", value: "Ready", status: "ok" },
-              { name: "LinkedIn Outreach", value: "Pending Setup", status: "warning" },
+              { name: "MRR", value: "2,500", status: "ok", unit: "EUR" },
+              { name: "Clients", value: "2", status: "ok", unit: "monthly" },
+              { name: "Side Projects", value: "~500", status: "ok", unit: "EUR" },
+              { name: "Email Campaign", value: "Active", status: "ok" },
+              { name: "LinkedIn", value: "Setup Ready", status: "warning" },
+              { name: "Upwork", value: "To Automate", status: "warning" },
             ],
             quickStats: {
               leads: 0,
-              revenue: 0,
+              revenue: 2500,
               growth: 0,
               teamSize: 1,
             },
@@ -171,7 +173,68 @@ export function BusinessOverview() {
         </div>
       </div>
 
-      {/* Business Grid */}
+      {/* Weekly Meetings & Priorities */}
+      <div className="px-5 py-3 border-b border-border/30">
+        <div className="grid grid-cols-2 gap-3">
+          {/* This Week's Meetings */}
+          <div className="border border-border/60 rounded-lg p-3 bg-bg-subtle/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Briefcase size={12} className="text-blue-500" />
+              <h3 className="text-[10px] font-medium uppercase tracking-wider text-text-muted/70">
+                This Week
+              </h3>
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-text-muted/60">Sales Interviews</span>
+                <span className="text-text">5 candidates</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-text-muted/60">Client Calls</span>
+                <span className="text-text">2 monthly clients</span>
+              </div>
+              <div className="text-[9px] text-text-muted/40 mt-1">
+                Scheduling interviews for Technical Sales role (25% commission)
+              </div>
+            </div>
+          </div>
+
+          {/* Current Priorities */}
+          <div className="border border-border/60 rounded-lg p-3 bg-bg-subtle/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Target size={12} className="text-green-500" />
+              <h3 className="text-[10px] font-medium uppercase tracking-wider text-text-muted/70">
+                Priorities
+              </h3>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-start gap-1.5 text-[10px]">
+                <div className="w-3 h-3 rounded border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check size={8} className="text-green-500" />
+                </div>
+                <span className="text-text">Email campaign to warm leads</span>
+              </div>
+              <div className="flex items-start gap-1.5 text-[10px]">
+                <div className="w-3 h-3 rounded border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
+                </div>
+                <span className="text-text-muted">Setup LinkedIn automation (20/day)</span>
+              </div>
+              <div className="flex items-start gap-1.5 text-[10px]">
+                <div className="w-3 h-3 rounded border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
+                </div>
+                <span className="text-text-muted">Setup Upwork automation for leads</span>
+              </div>
+              <div className="flex items-start gap-1.5 text-[10px]">
+                <div className="w-3 h-3 rounded border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
+                </div>
+                <span className="text-text-muted">Technical sales rep cold calls</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Business Grid - Card Layout */}
       <div className="flex-1 overflow-y-auto px-5 py-4">
         {businesses.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-center">
@@ -346,14 +409,14 @@ export function BusinessOverview() {
         )}
       </div>
 
-      {/* Setup Guide */}
+      {/* Action Items */}
       <div className="border-t border-border/60 px-5 py-3 bg-bg-subtle/50">
         <div className="flex items-start gap-2">
-          <AlertTriangle size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
+          <AlertTriangle size={12} className="text-blue-500 mt-0.5 flex-shrink-0" />
           <div className="text-[10px] text-text-muted/60">
-            <span className="font-medium text-text-muted">Setup Required:</span>{" "}
-            Add your actual metrics to replace "—" placeholders. Click on Nordspike to fill in current data. 
-            Missing metrics won't affect other features - they'll update automatically once you connect data sources.
+            <span className="font-medium text-text">This Week's Focus:</span>{" "}
+            Interview 5 technical sales candidates, setup LinkedIn automation (20 msgs/day), and prepare Upwork lead scraping. 
+            Current MRR: €2,500 (2 clients + side projects). Voice command: "Update interviews scheduled" to track progress.
           </div>
         </div>
       </div>

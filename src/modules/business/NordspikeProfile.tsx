@@ -100,7 +100,7 @@ export function NordspikeProfile() {
       if (nordspikeTasks.length > 0 && nordspikeTasks[0].result) {
         setData(nordspikeTasks[0].result as NordspikeData);
       } else {
-        // Create default structure with missing data
+        // Create default structure with current Nordspike data
         const defaultData: NordspikeData = {
           basicInfo: {
             name: "Nordspike",
@@ -111,20 +111,20 @@ export function NordspikeProfile() {
             status: "growing",
           },
           metrics: {
-            mrr: { value: null, currency: "EUR", trend: 0 },
-            arr: { value: null, currency: "EUR" },
+            mrr: { value: 2000, currency: "EUR", trend: 0, lastUpdated: new Date().toISOString() },
+            arr: { value: 24000, currency: "EUR" },
             ltv: { value: null, currency: "EUR", trend: 0 },
             cac: { value: null, currency: "EUR", trend: 0 },
-            activeClients: 0,
+            activeClients: 2,
             pipelineValue: null,
             closeRate: null,
             avgDealSize: null,
           },
           outreach: {
             instantly: {
-              status: "ready",
+              status: "running",
               mailboxes: 0,
-              campaignsActive: 0,
+              campaignsActive: 1,
               emailsSentToday: 0,
               dailyTarget: 20,
               replyRate: null,
@@ -141,17 +141,17 @@ export function NordspikeProfile() {
           team: {
             founder: { name: "Dante", role: "Founder & Full-Stack Engineer" },
             employees: [
-              { role: "Employee #2 (Sales or Dev)", status: "to_hire" },
+              { role: "Technical Sales Specialist (25% commission)", status: "to_hire" },
             ],
             targetSize: 5,
           },
           goals: {
             quarterly: [
-              { goal: "Hire 2nd employee", progress: 0, target: 1 },
-              { goal: "Reach €10K MRR", progress: 0, target: 10000 },
-              { goal: "Close 5 new clients", progress: 0, target: 5 },
+              { goal: "Hire Technical Sales Rep", progress: 1, target: 1 },
+              { goal: "Reach €10K MRR", progress: 2000, target: 10000 },
+              { goal: "Close 5 new clients via outreach", progress: 0, target: 5 },
             ],
-            nextHire: "Sales (outreach specialist) or Developer (fulfillment capacity)",
+            nextHire: "Technical Sales Specialist for warm lead follow-ups",
           },
         };
         setData(defaultData);

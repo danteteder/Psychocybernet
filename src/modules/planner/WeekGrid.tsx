@@ -11,7 +11,7 @@ export function WeekGrid() {
   const [weekOffset, setWeekOffset] = useState(0);
   const { tasks, loading, weekDates, refetch } = useWeekTasks(weekOffset);
   const businesses = useBusinesses();
-  const { addTask, updateTask, deleteTask } = useTaskActions(
+  const { addTask, updateTask, deleteTask } = useTaskActions(refetch);
 
   const today = new Date();
   const todayStr = formatDate(today);

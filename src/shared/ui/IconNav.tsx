@@ -12,6 +12,7 @@ import {
   Bot,
   Building2,
   Mail,
+  Zap,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -22,12 +23,13 @@ import { useRouter } from "next/navigation";
 const navItems = [
   { href: "/week", icon: CalendarDays, label: "Week" },
   { href: "/outreach", icon: Mail, label: "Outreach" },
+  { href: "/hermes", icon: Zap, label: "Hermes" },
   { href: "/business", icon: Building2, label: "Business" },
   { href: "/focus", icon: Focus, label: "Focus" },
   { href: "/month", icon: CalendarRange, label: "Month" },
   { href: "/year", icon: Calendar, label: "Year" },
   { href: "/team", icon: Users, label: "Team" },
-  { href: "/agent", icon: Bot, label: "Hermes" },
+  { href: "/agent", icon: Bot, label: "Agent" },
   { href: "/calendar", icon: CalendarDays, label: "Calendar" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
